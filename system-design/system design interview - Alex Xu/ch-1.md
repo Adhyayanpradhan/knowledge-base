@@ -4,4 +4,4 @@ Journey of a million users starts from one.
 
 1. **Single server setup**
 
-This setup means everything is running on one server: web app, database, cache etc
+    This setup means everything is running on one server: web app, database, cache etc
