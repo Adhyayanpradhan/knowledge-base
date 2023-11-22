@@ -139,3 +139,11 @@ Journey of a million users starts from one.
     Popular databases, such as MySQL, PostgreSQL and MongoDB, support various forms of replication.
 
     <img src="../assets/db-replication.png" alt="single srver setup" style="border: 10px solid #000;">
+
+    It's time to improve the load/response time. This can be done by adding a cache layer and shifting static contents to CDN (content delivery network)
+
+5. ### **Cache**
+
+    A cache is a temporary storage area that stores the result of expensive responses or frequently accessed data in memory so that subsequent requests are served more quickly.
+
+    <img src="../assets/cache.png" alt="single srver setup" style="border: 10px solid #000;">
