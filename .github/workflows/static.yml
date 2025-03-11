@@ -38,8 +38,7 @@ jobs:
         with:
           # Upload only index.html and virtualdom.js
           path: |
-            core concepts/VirtualDOM/Interactive/index.html
-            core concepts/VirtualDOM/Interactive/virtualdom.js
+            "core concepts/VirtualDOM/Interactive"
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
