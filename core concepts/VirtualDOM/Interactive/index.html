@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Interactive Virtual DOM Visualization</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      .highlight {
+        background-color: #ff980020;
+        padding: 2px;
+        border-radius: 2px;
+        animation: flash 2s;
+      }
+
+      @keyframes flash {
+        0% {
+          background-color: #ffff0066;
+        }
+        100% {
+          background-color: #ff980020;
+        }
+      }
+
+      .diff-highlight {
+        background-color: #ff99cc33;
+        padding: 2px;
+        border-radius: 2px;
+      }
+
+      .operation {
+        display: block;
+        margin: 5px 0;
+        padding: 5px;
+        background-color: #f0f0f0;
+        border-radius: 4px;
+      }
+
+      .add {
+        color: green;
+      }
+      .update {
+        color: orange;
+      }
+      .remove {
+        color: red;
+      }
+
+      #logs {
+        max-height: 200px;
+        overflow-y: auto;
+      }
+
+      .bg-gradient-to-r {
+        background: linear-gradient(to right, #4b5563, #1f2937);
+      }
+
+      .bg-gradient-to-b {
+        background: linear-gradient(to bottom, #4b5563, #1f2937);
+      }
+
+      .text-gradient {
+        background: linear-gradient(to right, #4b5563, #1f2937);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100 text-gray-800">
+    <div class="container mx-auto p-4">
+      <h1 class="text-3xl font-bold mb-6 text-center text-gradient">
+        Interactive Virtual DOM Visualization
+      </h1>
+
+      <div class="bg-white shadow-md rounded-lg mb-6">
+        <div class="bg-gradient-to-r text-white p-4 rounded-t-lg">
+          <h3 class="text-xl font-semibold">Element Controls</h3>
+        </div>
+        <div class="p-4">
+          <div class="flex flex-wrap mb-4">
+            <div class="w-full md:w-1/4 p-2">
+              <label
+                for="element-type"
+                class="block text-sm font-medium text-gray-700"
+                >Element Type</label
+              >
+              <select
+                id="element-type"
+                class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm"
+              >
+                <option value="div">div</option>
+                <option value="p">p</option>
+                <option value="h2">h2</option>
+                <option value="h3">h3</option>
+                <option value="button">button</option>
+                <option value="span">span</option>
+                <option value="ul">ul</option>
+                <option value="li">li</option>
+              </select>
+            </div>
+
+            <div class="w-full md:w-1/4 p-2">
+              <label
+                for="element-text"
+                class="block text-sm font-medium text-gray-700"
+                >Element Text</label
+              >
+              <input
+                id="element-text"
+                type="text"
+                class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm"
+                placeholder="Enter text content"
+              />
+            </div>
+
+            <div class="w-full md:w-1/4 p-2">
+              <label
+                for="element-class"
+                class="block text-sm font-medium text-gray-700"
+                >CSS Class</label
+              >
+              <input
+                id="element-class"
+                type="text"
+                class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm"
+                placeholder="Class name"
+              />
+            </div>
+
+            <div class="w-full md:w-1/4 p-2 flex items-end">
+              <button
+                id="add-element"
+                class="w-full bg-gray-700 text-white py-2 px-4 rounded-md shadow-sm hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+              >
+                Add Element
+              </button>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap mb-4">
+            <div class="w-full md:w-1/4 p-2">
+              <label
+                for="select-element"
+                class="block text-sm font-medium text-gray-700"
+                >Select Element</label
+              >
+              <select
+                id="select-element"
+                class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm"
+              >
+                <option value="">Select an element to modify</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap mb-4">
+            <div class="w-full md:w-1/4 p-2">
+              <label
+                for="update-text"
+                class="block text-sm font-medium text-gray-700"
+                >New Text</label
+              >
+              <input
+                id="update-text"
+                type="text"
+                class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm"
+                placeholder="Update text"
+              />
+            </div>
+
+            <div class="w-full md:w-1/4 p-2">
+              <label
+                for="update-class"
+                class="block text-sm font-medium text-gray-700"
+                >New Class</label
+              >
+              <input
+                id="update-class"
+                type="text"
+                class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm"
+                placeholder="Update class"
+              />
+            </div>
+
+            <div class="w-full md:w-1/4 p-2 flex items-end">
+              <button
+                id="update-element"
+                class="w-full bg-yellow-500 text-white py-2 px-4 rounded-md shadow-sm hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+                disabled
+              >
+                Update Element
+              </button>
+            </div>
+
+            <div class="w-full md:w-1/4 p-2 flex items-end">
+              <button
+                id="remove-element"
+                class="w-full bg-red-500 text-white py-2 px-4 rounded-md shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                disabled
+              >
+                Remove Element
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div class="bg-white shadow-md rounded-lg">
+          <div class="bg-gradient-to-r text-white p-4 rounded-t-lg">
+            <h2 class="text-xl font-semibold">Real DOM</h2>
+          </div>
+          <div class="p-4">
+            <div id="display-area">
+              <div id="root"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white shadow-md rounded-lg">
+          <div class="bg-gradient-to-r text-white p-4 rounded-t-lg">
+            <h2 class="text-xl font-semibold">Virtual DOM Representation</h2>
+          </div>
+          <div class="p-4">
+            <pre id="vdom-display" class="bg-gray-100 p-4 rounded-lg"></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white shadow-md rounded-lg">
+        <div class="bg-gradient-to-r text-white p-4 rounded-t-lg">
+          <h2 class="text-xl font-semibold">Diffing & Operations Log</h2>
+        </div>
+        <div class="p-4">
+          <div id="logs" class="bg-gray-100 p-4 rounded-lg"></div>
+        </div>
+      </div>
+    </div>
+    <script src="virtualdom.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const selectElement = document.getElementById("select-element");
+        const updateButton = document.getElementById("update-element");
+        const removeButton = document.getElementById("remove-element");
+
+        selectElement.addEventListener("change", function () {
+          const isElementSelected = selectElement.value !== "";
+          updateButton.disabled = !isElementSelected;
+          removeButton.disabled = !isElementSelected;
+        });
+      });
+    </script>
+  </body>
+</html>
