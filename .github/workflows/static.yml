@@ -37,8 +37,7 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           # Upload only index.html and virtualdom.js
-          path: |
-            "core concepts/VirtualDOM/Interactive"
+          path: "coreConcepts/VirtualDOM/Interactive"
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
