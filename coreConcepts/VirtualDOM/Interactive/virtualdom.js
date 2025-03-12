@@ -274,6 +274,9 @@ class App {
     // Set up event listeners
     this.setupEventListeners();
 
+    // Update both select elements
+    this.updateSelectElements();
+
     // Generate the initial graph
     this.generateGraph();
   }
@@ -299,6 +302,7 @@ class App {
     const type = document.getElementById("element-type").value;
     const text = document.getElementById("element-text").value;
     const className = document.getElementById("element-class").value;
+    const parentId = document.getElementById("parent-element").value;
 
     // Create props object
     const props = {};
@@ -311,9 +315,32 @@ class App {
     const id = newElement.id;
     this.elementsMap.set(id, newElement);
 
-    // Add to children
+    // Find the parent node in our virtual DOM
+    const findAndAddChild = (vNode) => {
+      if (vNode.id === parentId) {
+        vNode.children.push(newElement);
+        return true;
+      }
+
+      // Recurse through children
+      if (vNode.children) {
+        for (let child of vNode.children) {
+          if (findAndAddChild(child)) return true;
+        }
+      }
+
+      return false;
+    };
+
+    // Save the previous state
     this.prevVDOM = JSON.parse(JSON.stringify(this.rootVDOM));
-    this.rootVDOM.children.push(newElement);
+
+    // Add to the selected parent or root if no parent selected
+    if (parentId) {
+      findAndAddChild(this.rootVDOM);
+    } else {
+      this.rootVDOM.children.push(newElement);
+    }
 
     // Update real DOM
     const rootElement = document.getElementById("root");
@@ -321,7 +348,7 @@ class App {
 
     // Update displays
     this.updateVDOMDisplay();
-    this.updateElementSelect();
+    this.updateSelectElements();
 
     // Update the graph
     this.generateGraph();
@@ -334,25 +361,27 @@ class App {
     const newText = document.getElementById("update-text").value;
     const newClass = document.getElementById("update-class").value;
 
-    // Find the element in our virtual DOM
-    const findAndUpdate = (vNode) => {
+    // Find and update the element
+    const updateNode = (vNode) => {
       if (vNode.id === selectId) {
+        // Save the previous state
+        this.prevVDOM = JSON.parse(JSON.stringify(this.rootVDOM));
+
         if (vNode.type === "TEXT_ELEMENT") {
           vNode.value = newText || vNode.value;
         } else {
-          if (newText) {
-            // Update or add text child
-            const textChild = vNode.children.find(
-              (c) => c.type === "TEXT_ELEMENT"
-            );
-            if (textChild) {
-              textChild.value = newText;
-            } else {
-              vNode.children.push(this.vdom.createTextElement(newText));
-            }
+          // Update text node
+          if (
+            vNode.children.length > 0 &&
+            vNode.children[0].type === "TEXT_ELEMENT"
+          ) {
+            vNode.children[0].value = newText || vNode.children[0].value;
+          } else if (newText) {
+            // Add a new text node
+            vNode.children.unshift(this.vdom.createTextElement(newText));
           }
 
-          // Update class if provided
+          // Update class
           if (newClass !== "") {
             vNode.props.className = newClass;
           }
@@ -363,18 +392,14 @@ class App {
       // Recurse through children
       if (vNode.children) {
         for (let child of vNode.children) {
-          if (findAndUpdate(child)) return true;
+          if (updateNode(child)) return true;
         }
       }
 
       return false;
     };
 
-    // Save the previous state
-    this.prevVDOM = JSON.parse(JSON.stringify(this.rootVDOM));
-
-    // Update the element
-    findAndUpdate(this.rootVDOM);
+    updateNode(this.rootVDOM);
 
     // Update real DOM
     const rootElement = document.getElementById("root");
@@ -382,7 +407,7 @@ class App {
 
     // Update displays
     this.updateVDOMDisplay();
-    this.updateElementSelect();
+    this.updateSelectElements();
 
     // Update the graph
     this.generateGraph();
@@ -432,7 +457,7 @@ class App {
 
     // Update displays
     this.updateVDOMDisplay();
-    this.updateElementSelect();
+    this.updateSelectElements();
 
     // Update the graph
     this.generateGraph();
@@ -443,18 +468,24 @@ class App {
     vdomDisplay.textContent = this.vdom.printVDOM(this.rootVDOM);
   }
 
-  updateElementSelect() {
-    const select = document.getElementById("select-element");
+  // Combined method to update both select elements
+  updateSelectElements() {
+    const selectElement = document.getElementById("select-element");
+    const parentSelect = document.getElementById("parent-element");
+
     // Clear options except the first
-    while (select.options.length > 1) {
-      select.remove(1);
+    while (selectElement.options.length > 1) {
+      selectElement.remove(1);
+    }
+    while (parentSelect.options.length > 1) {
+      parentSelect.remove(1);
     }
 
     // Helper to gather elements recursively
     const gatherElements = (vNode, prefix = "") => {
       if (!vNode) return;
 
-      // Skip the root node
+      // Skip the root node for select element (we don't want to select the root)
       if (vNode.id !== this.rootVDOM.id) {
         let displayName;
 
@@ -469,10 +500,19 @@ class App {
           }
         }
 
+        // Add to select element dropdown (elements that can be selected for update/remove)
         const option = document.createElement("option");
         option.value = vNode.id;
         option.textContent = `${prefix}${displayName}`;
-        select.appendChild(option);
+        selectElement.appendChild(option);
+
+        // Only add element nodes as potential parents (not text nodes)
+        if (vNode.type !== "TEXT_ELEMENT") {
+          const parentOption = document.createElement("option");
+          parentOption.value = vNode.id;
+          parentOption.textContent = `${prefix}${displayName}`;
+          parentSelect.appendChild(parentOption);
+        }
       }
 
       // Recurse through children
@@ -484,6 +524,13 @@ class App {
       }
     };
 
+    // Add root element as a potential parent
+    const rootOption = document.createElement("option");
+    rootOption.value = this.rootVDOM.id;
+    rootOption.textContent = `<${this.rootVDOM.type}> #app-root`;
+    parentSelect.appendChild(rootOption);
+
+    // Gather all elements
     gatherElements(this.rootVDOM);
   }
 

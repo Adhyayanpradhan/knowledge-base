@@ -54,12 +54,8 @@
         overflow-y: auto;
       }
 
-      .bg-gradient-to-r {
+      .bg-gradient-primary {
         background: linear-gradient(to right, #4b5563, #1f2937);
-      }
-
-      .bg-gradient-to-b {
-        background: linear-gradient(to bottom, #4b5563, #1f2937);
       }
 
       .text-gradient {
@@ -68,115 +64,156 @@
         -webkit-text-fill-color: transparent;
       }
 
-      .about-section {
-        display: none;
-        position: absolute;
-        top: 100%;
-        left: 50%;
-        transform: translateX(-100%);
-        background-color: white;
-        border: 1px solid #e5e7eb;
-        border-radius: 0.375rem;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
-          0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      #root {
+        min-height: 150px;
+        border: 1px dashed #ccc;
         padding: 1rem;
-        z-index: 10;
-        width: 300px;
+        border-radius: 0.375rem;
       }
 
-      .about-button:hover + .about-section,
-      .about-section:hover {
-        display: block;
+      #vdom-display {
+        max-height: 300px;
+        overflow-y: auto;
+        font-family: monospace;
+        font-size: 0.875rem;
+        white-space: pre-wrap;
       }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.21.1/cytoscape.min.js"></script>
   </head>
-  <body class="bg-gray-100 text-gray-800 relative">
-    <div class="container mx-auto p-4">
-      <div class="flex justify-between items-center mb-6">
-        <a href="https://www.linkedin.com/in/pradhan-adhyayan/" target="_blank">
-          <img src="logo.jpeg" alt="Logo" class="h-12 w-12 rounded-full" />
-        </a>
-        <div class="relative">
-          <button
-            class="about-button bg-gray-700 text-white py-2 px-4 rounded-md shadow-sm hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+  <body class="bg-gray-100 text-gray-800">
+    <!-- Header -->
+    <header class="bg-white shadow-md sticky top-0 z-40">
+      <div
+        class="container mx-auto px-4 py-3 flex justify-between items-center"
+      >
+        <div class="flex items-center space-x-4">
+          <a
+            href="https://www.linkedin.com/in/pradhan-adhyayan/"
+            target="_blank"
+            class="flex items-center"
           >
-            About
-          </button>
-          <div class="about-section">
-            <h3 class="text-lg font-semibold mb-2">About This Project</h3>
-            <p class="text-sm text-gray-700">
-              This project demonstrates the use of a virtual DOM to efficiently
-              update the real DOM. It includes interactive controls to add,
-              update, and remove elements.
-            </p>
-            <button id="open-modal" class="text-blue-500 hover:underline">
-              Learn more
+            <img
+              src="logo.jpeg"
+              alt="Logo"
+              class="h-10 w-10 rounded-full mr-2"
+            />
+            <span class="font-semibold text-xl hidden md:block"
+              >Virtual DOM Explorer</span
+            >
+          </a>
+        </div>
+        <div class="flex items-center space-x-3">
+          <div class="relative" id="about-container">
+            <button
+              class="about-button bg-gray-700 text-white py-2 px-4 rounded-md shadow-sm hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+            >
+              About
             </button>
+            <div
+              class="hidden absolute right-0 mt-2 w-64 bg-white rounded-md shadow-lg p-4 z-50"
+              id="about-dropdown"
+            >
+              <h3 class="text-lg font-semibold mb-2">About This Project</h3>
+              <p class="text-sm text-gray-700 mb-3">
+                This project demonstrates the use of a virtual DOM to
+                efficiently update the real DOM. It includes interactive
+                controls to add, update, and remove elements.
+              </p>
+              <button id="open-modal" class="text-blue-500 hover:underline">
+                Learn more
+              </button>
+            </div>
           </div>
         </div>
       </div>
+    </header>
 
+    <div class="container mx-auto px-4 pt-6 pb-12">
       <h1 class="text-3xl font-bold mb-6 text-center text-gradient">
         Interactive Virtual DOM Visualization
       </h1>
 
-      <div class="bg-white shadow-md rounded-lg mb-6">
-        <div class="bg-gradient-to-r text-white p-4 rounded-t-lg">
-          <h3 class="text-xl font-semibold">Element Controls</h3>
-        </div>
-        <div class="p-4">
-          <div class="flex flex-wrap mb-4">
-            <div class="w-full md:w-1/4 p-2">
-              <label
-                for="element-type"
-                class="block text-sm font-medium text-gray-700"
-                >Element Type</label
-              >
-              <select
-                id="element-type"
-                class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm"
-              >
-                <option value="div">div</option>
-                <option value="p">p</option>
-                <option value="h2">h2</option>
-                <option value="h3">h3</option>
-                <option value="button">button</option>
-                <option value="span">span</option>
-                <option value="ul">ul</option>
-                <option value="li">li</option>
-              </select>
-            </div>
+      <!-- Main Layout -->
+      <div class="flex flex-col lg:flex-row gap-6">
+        <!-- Sidebar Controls -->
+        <aside
+          class="sidebar bg-white shadow-md rounded-lg w-full lg:w-1/3 h-fit"
+        >
+          <div class="bg-gradient-primary text-white p-4 rounded-t-lg">
+            <h3 class="text-xl font-semibold">Element Controls</h3>
+          </div>
+          <div class="p-4 space-y-6">
+            <!-- Add Element Form -->
+            <div class="space-y-3">
+              <h4 class="font-medium text-gray-700 border-b pb-1">
+                Add New Element
+              </h4>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label
+                    for="element-type"
+                    class="block text-sm font-medium text-gray-700"
+                    >Element Type</label
+                  >
+                  <select
+                    id="element-type"
+                    class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm"
+                  >
+                    <option value="div">div</option>
+                    <option value="p">p</option>
+                    <option value="h2">h2</option>
+                    <option value="h3">h3</option>
+                    <option value="button">button</option>
+                    <option value="span">span</option>
+                    <option value="ul">ul</option>
+                    <option value="li">li</option>
+                  </select>
+                </div>
 
-            <div class="w-full md:w-1/4 p-2">
-              <label
-                for="element-text"
-                class="block text-sm font-medium text-gray-700"
-                >Element Text</label
-              >
-              <input
-                id="element-text"
-                type="text"
-                class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm"
-                placeholder="Enter text content"
-              />
-            </div>
+                <div>
+                  <label
+                    for="element-text"
+                    class="block text-sm font-medium text-gray-700"
+                    >Element Text</label
+                  >
+                  <input
+                    id="element-text"
+                    type="text"
+                    class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm"
+                    placeholder="Enter text content"
+                  />
+                </div>
 
-            <div class="w-full md:w-1/4 p-2">
-              <label
-                for="element-class"
-                class="block text-sm font-medium text-gray-700"
-                >CSS Class</label
-              >
-              <input
-                id="element-class"
-                type="text"
-                class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm"
-                placeholder="Class name"
-              />
-            </div>
+                <div>
+                  <label
+                    for="element-class"
+                    class="block text-sm font-medium text-gray-700"
+                    >CSS Class</label
+                  >
+                  <input
+                    id="element-class"
+                    type="text"
+                    class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm"
+                    placeholder="Class name"
+                  />
+                </div>
 
-            <div class="w-full md:w-1/4 p-2 flex items-end">
+                <div>
+                  <label
+                    for="parent-element"
+                    class="block text-sm font-medium text-gray-700"
+                    >Parent Element</label
+                  >
+                  <select
+                    id="parent-element"
+                    class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm"
+                  >
+                    <option value="">Select a parent element</option>
+                  </select>
+                </div>
+              </div>
+
               <button
                 id="add-element"
                 class="w-full bg-gray-700 text-white py-2 px-4 rounded-md shadow-sm hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
@@ -184,156 +221,149 @@
                 Add Element
               </button>
             </div>
-          </div>
 
-          <div class="flex flex-wrap mb-4">
-            <div class="w-full md:w-1/4 p-2">
-              <label
-                for="select-element"
-                class="block text-sm font-medium text-gray-700"
-                >Select Element</label
-              >
-              <select
-                id="select-element"
-                class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm"
-              >
-                <option value="">Select an element to modify</option>
-              </select>
+            <!-- Update/Remove Element Form -->
+            <div class="space-y-3">
+              <h4 class="font-medium text-gray-700 border-b pb-1">
+                Modify Existing Element
+              </h4>
+              <div>
+                <label
+                  for="select-element"
+                  class="block text-sm font-medium text-gray-700"
+                  >Select Element</label
+                >
+                <select
+                  id="select-element"
+                  class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm"
+                >
+                  <option value="">Select an element to modify</option>
+                </select>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label
+                    for="update-text"
+                    class="block text-sm font-medium text-gray-700"
+                    >New Text</label
+                  >
+                  <input
+                    id="update-text"
+                    type="text"
+                    class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm"
+                    placeholder="Update text"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    for="update-class"
+                    class="block text-sm font-medium text-gray-700"
+                    >New Class</label
+                  >
+                  <input
+                    id="update-class"
+                    type="text"
+                    class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm"
+                    placeholder="Update class"
+                  />
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-3">
+                <button
+                  id="update-element"
+                  class="bg-yellow-500 text-white py-2 px-4 rounded-md shadow-sm hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 disabled:opacity-50"
+                  disabled
+                >
+                  Update Element
+                </button>
+
+                <button
+                  id="remove-element"
+                  class="bg-red-500 text-white py-2 px-4 rounded-md shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
+                  disabled
+                >
+                  Remove Element
+                </button>
+              </div>
             </div>
           </div>
+        </aside>
 
-          <div class="flex flex-wrap mb-4">
-            <div class="w-full md:w-1/4 p-2">
-              <label
-                for="update-text"
-                class="block text-sm font-medium text-gray-700"
-                >New Text</label
-              >
-              <input
-                id="update-text"
-                type="text"
-                class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm"
-                placeholder="Update text"
-              />
+        <!-- Main Content Area -->
+        <main class="main-content w-full lg:w-2/3 space-y-6">
+          <!-- DOM Preview -->
+          <section class="bg-white shadow-md rounded-lg">
+            <div
+              class="bg-gradient-primary text-white p-4 rounded-t-lg flex justify-between items-center"
+            >
+              <h2 class="text-xl font-semibold">Real DOM</h2>
+              <div class="text-xs bg-gray-200 text-gray-800 px-2 py-1 rounded">
+                Live Preview
+              </div>
             </div>
+            <div class="p-4">
+              <div id="root" class="border rounded"></div>
+            </div>
+          </section>
 
-            <div class="w-full md:w-1/4 p-2">
-              <label
-                for="update-class"
-                class="block text-sm font-medium text-gray-700"
-                >New Class</label
-              >
-              <input
-                id="update-class"
-                type="text"
-                class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm"
-                placeholder="Update class"
-              />
+          <!-- VDOM Panel -->
+          <section class="bg-white shadow-md rounded-lg">
+            <div class="bg-gradient-primary text-white p-4 rounded-t-lg">
+              <h2 class="text-xl font-semibold">Virtual DOM Representation</h2>
             </div>
+            <div class="p-4">
+              <pre id="vdom-display" class="bg-gray-100 p-4 rounded-lg"></pre>
+            </div>
+          </section>
 
-            <div class="w-full md:w-1/4 p-2 flex items-end">
-              <button
-                id="update-element"
-                class="w-full bg-yellow-500 text-white py-2 px-4 rounded-md shadow-sm hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
-                disabled
-              >
-                Update Element
-              </button>
+          <!-- Graph Panel -->
+          <section class="bg-white shadow-md rounded-lg">
+            <div class="bg-gradient-primary text-white p-4 rounded-t-lg">
+              <h2 class="text-xl font-semibold">DOM Graph Visualization</h2>
             </div>
+            <div class="p-4">
+              <div id="dom-graph" class="w-full h-96"></div>
+            </div>
+          </section>
 
-            <div class="w-full md:w-1/4 p-2 flex items-end">
-              <button
-                id="remove-element"
-                class="w-full bg-red-500 text-white py-2 px-4 rounded-md shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                disabled
-              >
-                Remove Element
-              </button>
+          <!-- Operations Log -->
+          <section class="bg-white shadow-md rounded-lg">
+            <div class="bg-gradient-primary text-white p-4 rounded-t-lg">
+              <h2 class="text-xl font-semibold">Diffing & Operations Log</h2>
             </div>
-          </div>
-        </div>
+            <div class="p-4">
+              <div id="logs" class="bg-gray-100 p-4 rounded-lg"></div>
+            </div>
+          </section>
+        </main>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div class="bg-white shadow-md rounded-lg">
-          <div class="bg-gradient-to-r text-white p-4 rounded-t-lg">
-            <h2 class="text-xl font-semibold">Real DOM</h2>
-          </div>
-          <div class="p-4">
-            <div id="display-area">
-              <div id="root"></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-white shadow-md rounded-lg">
-          <div class="bg-gradient-to-r text-white p-4 rounded-t-lg">
-            <h2 class="text-xl font-semibold">Virtual DOM Representation</h2>
-          </div>
-          <div class="p-4">
-            <pre id="vdom-display" class="bg-gray-100 p-4 rounded-lg"></pre>
-          </div>
-        </div>
-      </div>
-      <div class="flex justify-center mb-6">
-        <div class="bg-white shadow-md rounded-lg w-full md:w-2/3 lg:w-1/2">
-          <div class="bg-gradient-to-r text-white p-4 rounded-t-lg">
-            <h2 class="text-xl font-semibold">DOM Graph Visualization</h2>
-          </div>
-          <div class="p-4">
-            <div id="dom-graph" class="w-full h-96"></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="bg-white shadow-md rounded-lg">
-        <div class="bg-gradient-to-r text-white p-4 rounded-t-lg">
-          <h2 class="text-xl font-semibold">Diffing & Operations Log</h2>
-        </div>
-        <div class="p-4">
-          <div id="logs" class="bg-gray-100 p-4 rounded-lg"></div>
-        </div>
-      </div>
-
+      <!-- Footer -->
       <footer class="mt-8 text-center text-gray-600">
-        Made with <span class="text-red-500">❤️</span> by Adhyayan
+        <p>Made with <span class="text-red-500">❤️</span> by Adhyayan</p>
+        <p class="text-sm mt-1">
+          <a
+            href="https://github.com/Adhyayanpradhan"
+            class="text-blue-500 hover:underline"
+            >GitHub</a
+          >
+          |
+          <a
+            href="https://www.linkedin.com/in/pradhan-adhyayan/"
+            class="text-blue-500 hover:underline"
+            >LinkedIn</a
+          >
+        </p>
       </footer>
     </div>
-    <script src="virtualdom.js"></script>
 
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        const selectElement = document.getElementById("select-element");
-        const updateButton = document.getElementById("update-element");
-        const removeButton = document.getElementById("remove-element");
-        const openModalButton = document.getElementById("open-modal");
-        const closeModalButton = document.getElementById("close-modal");
-        const modal = document.getElementById("modal");
-
-        selectElement.addEventListener("change", function () {
-          const isElementSelected = selectElement.value !== "";
-          updateButton.disabled = !isElementSelected;
-          removeButton.disabled = !isElementSelected;
-        });
-
-        openModalButton.addEventListener("click", function () {
-          modal.classList.remove("hidden");
-        });
-
-        closeModalButton.addEventListener("click", function () {
-          modal.classList.add("hidden");
-        });
-
-        window.addEventListener("click", function (event) {
-          if (event.target === modal) {
-            modal.classList.add("hidden");
-          }
-        });
-      });
-    </script>
+    <!-- Modal -->
     <div
       id="modal"
-      class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden"
+      class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden z-50"
     >
       <div
         class="bg-white rounded-lg shadow-lg p-6 w-11/12 md:w-1/2 lg:w-1/3 max-h-full overflow-y-auto"
@@ -341,7 +371,20 @@
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-xl font-semibold">About Virtual DOM</h2>
           <button id="close-modal" class="text-gray-500 hover:text-gray-700">
-            &times;
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
           </button>
         </div>
         <div>
@@ -374,5 +417,60 @@
         </div>
       </div>
     </div>
+
+    <script src="virtualdom.js"></script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Element selection and button state
+        const selectElement = document.getElementById("select-element");
+        const updateButton = document.getElementById("update-element");
+        const removeButton = document.getElementById("remove-element");
+
+        // Modal handling
+        const openModalButton = document.getElementById("open-modal");
+        const closeModalButton = document.getElementById("close-modal");
+        const modal = document.getElementById("modal");
+
+        // About dropdown
+        const aboutContainer = document.getElementById("about-container");
+        const aboutButton = document.querySelector(".about-button");
+        const aboutDropdown = document.getElementById("about-dropdown");
+
+        // Button state based on selection
+        selectElement.addEventListener("change", function () {
+          const isElementSelected = selectElement.value !== "";
+          updateButton.disabled = !isElementSelected;
+          removeButton.disabled = !isElementSelected;
+        });
+
+        // Modal handling
+        openModalButton.addEventListener("click", function () {
+          modal.classList.remove("hidden");
+        });
+
+        closeModalButton.addEventListener("click", function () {
+          modal.classList.add("hidden");
+        });
+
+        window.addEventListener("click", function (event) {
+          if (event.target === modal) {
+            modal.classList.add("hidden");
+          }
+        });
+
+        // About dropdown toggle
+        aboutButton.addEventListener("click", function () {
+          aboutDropdown.classList.toggle("hidden");
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener("click", function (event) {
+          if (!aboutContainer.contains(event.target)) {
+            aboutDropdown.classList.add("hidden");
+          }
+        });
+      });
+    </script>
   </body>
 </html>
