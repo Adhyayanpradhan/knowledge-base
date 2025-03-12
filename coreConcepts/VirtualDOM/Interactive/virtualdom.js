@@ -273,6 +273,9 @@ class App {
 
     // Set up event listeners
     this.setupEventListeners();
+
+    // Generate the initial graph
+    this.generateGraph();
   }
 
   setupEventListeners() {
@@ -319,6 +322,9 @@ class App {
     // Update displays
     this.updateVDOMDisplay();
     this.updateElementSelect();
+
+    // Update the graph
+    this.generateGraph();
   }
 
   updateElement() {
@@ -377,6 +383,9 @@ class App {
     // Update displays
     this.updateVDOMDisplay();
     this.updateElementSelect();
+
+    // Update the graph
+    this.generateGraph();
   }
 
   removeElement() {
@@ -424,6 +433,9 @@ class App {
     // Update displays
     this.updateVDOMDisplay();
     this.updateElementSelect();
+
+    // Update the graph
+    this.generateGraph();
   }
 
   updateVDOMDisplay() {
@@ -473,6 +485,70 @@ class App {
     };
 
     gatherElements(this.rootVDOM);
+  }
+
+  generateGraph() {
+    const elements = [];
+
+    const traverseVDOM = (vNode, parentId = null) => {
+      const nodeId = vNode.id;
+      const label = vNode.type === "TEXT_ELEMENT" ? vNode.value : vNode.type;
+      elements.push({
+        data: { id: nodeId, label: label },
+      });
+
+      if (parentId) {
+        elements.push({
+          data: { source: parentId, target: nodeId },
+        });
+      }
+
+      vNode.children.forEach((child) => {
+        traverseVDOM(child, nodeId);
+      });
+    };
+
+    traverseVDOM(this.rootVDOM);
+
+    const cy = cytoscape({
+      container: document.getElementById("dom-graph"),
+      elements: elements,
+      style: [
+        {
+          selector: "node",
+          style: {
+            label: "data(label)",
+            "text-valign": "center",
+            "text-halign": "center",
+            "background-color": "#4b5563",
+            color: "#ffffff",
+            "font-size": "12px",
+            "border-width": 2,
+            "border-color": "#ffffff",
+            width: "label",
+            height: "label",
+            padding: "10px",
+            shape: "round-rectangle",
+          },
+        },
+        {
+          selector: "edge",
+          style: {
+            width: 3,
+            "line-color": "#4b5563",
+            "target-arrow-color": "#4b5563",
+            "target-arrow-shape": "triangle",
+            "curve-style": "bezier",
+          },
+        },
+      ],
+      layout: {
+        name: "breadthfirst",
+        directed: true,
+        padding: 10,
+        spacingFactor: 1.5,
+      },
+    });
   }
 }
 
