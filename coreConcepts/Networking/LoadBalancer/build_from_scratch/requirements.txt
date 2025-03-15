@@ -1,0 +1,7 @@
+fastapi==0.95.2
+uvicorn==0.22.0
+httpx==0.24.0
+pydantic==1.10.2
+requests==2.31.0
+locust==2.15.1
+python-multipart

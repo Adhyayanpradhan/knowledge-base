@@ -1,0 +1,69 @@
+# docker-compose.yml
+# version: "3"
+
+services:
+  # Load Balancer
+  load-balancer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - ALGORITHM=weighted_round_robin
+      - BACKEND_SERVERS=http://backend-1:5000,http://backend-2:5000,http://backend-3:5000
+    depends_on:
+      - backend-1
+      - backend-2
+      - backend-3
+    networks:
+      - lb-network
+
+  # Backend Servers
+  backend-1:
+    build:
+      context: ./backend
+    environment:
+      - SERVER_ID=server-1
+      - FAILURE_RATE=0.02
+      - MIN_LATENCY=0.01
+      - MAX_LATENCY=0.2
+    networks:
+      - lb-network
+
+  backend-2:
+    build:
+      context: ./backend
+    environment:
+      - SERVER_ID=server-2
+      - FAILURE_RATE=0.05
+      - MIN_LATENCY=0.05
+      - MAX_LATENCY=0.3
+    networks:
+      - lb-network
+
+  backend-3:
+    build:
+      context: ./backend
+    environment:
+      - SERVER_ID=server-3
+      - FAILURE_RATE=0.08
+      - MIN_LATENCY=0.1
+      - MAX_LATENCY=0.5
+    networks:
+      - lb-network
+
+  # Locust - for load testing
+  locust:
+    image: locustio/locust
+    ports:
+      - "8089:8089"
+    volumes:
+      - ./tests/load:/mnt/locust
+    command: -f /mnt/locust/locustfile.py --host=http://load-balancer:8080
+    networks:
+      - lb-network
+
+networks:
+  lb-network:
+    driver: bridge
